@@ -396,17 +396,17 @@
             </div>
 
             <div class="result-item">
-                <span class="result-label">💵 Cashback:</span>
+                <span class="result-label">Cashback:</span>
                 <span class="result-value highlight" id="resultCashback">0.00</span>
             </div>
 
             <div class="result-item">
-                <span class="result-label">🏷️ Effektivpreis:</span>
+                <span class="result-label">Effektivpreis:</span>
                 <span class="result-value highlight" id="resultEffectivePrice">0.00</span>
             </div>
 
             <div class="result-item">
-                <span class="result-label">📉 Ersparnis:</span>
+                <span class="result-label">Ersparnis:</span>
                 <span class="result-value" id="resultSavings">0.0%</span>
             </div>
         </div>
@@ -416,9 +416,8 @@
             <div class="info-box" role="note">
                 <h3>Wie funktioniert Cashback?</h3>
                 <p>Cashback ist eine Rückvergütung, die du für Online-Einkäufe erhältst und die dir aufs Bankkonto ausgezahlt wird.</p>
-                <p></p>
+                <p>&nbsp;</p>
                 <p><strong>Wichtig zu wissen:</strong></p>
-                <br></br>
                 <ul>
                     <li>Cashback wird immer auf den Netto-Preis berechnet (Kaufpreis ohne Mehrwertsteuer)</li>
                     <li>Die Cashback-Rate variiert je nach Shop (meist 1–10%)</li>
@@ -433,13 +432,13 @@ Cashback (3%): 2.52€
             <div class="info-box secondary" role="note">
                 <h3>Was bedeutet USD-Konversion?</h3>
                 <p>Einige internationale Partnershops (z.B. AliExpress) erfassen den Kaufpreis im Hintergrund in USD, bevor sie das Cashback berechnen.</p>
-                <p></p>
+                <p>&nbsp;</p>
                 <p><strong>Wann aktivieren?</strong></p>
-                 <br></br>
                 <ul>
                     <li>✅ Wenn in den Cashback-Bedingungen eine USD-Umrechnung erwähnt wird</li>
                     <li>❌ Bei europäischen Shops normalerweise nicht nötig</li>
                 </ul>
+                <p>&nbsp;</p>
                 <div class="example">Beispiel mit USD-Konversion:
 100€ → 108.47 USD (Netto) → 3% Cashback = 3.25 USD → 3.00€
 Ohne USD-Konversion: 100€ → 84.03€ (Netto) → 3% = 2.52€</div>
