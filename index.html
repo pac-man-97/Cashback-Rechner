@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Cashback-Rechner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Hintergrund: Nutzerwunsch #E9EAEC */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #E9EAEC;
+            color: #0f172a;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 680px;
+            width: 100%;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.08);
+            padding: 26px;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            color: #0f172a;
+            margin-bottom: 22px;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d0d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #fbfdfe;
+            color: #0f172a;
+            transition: border-color 0.18s, box-shadow 0.18s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #2b6cb0;
+            box-shadow: 0 0 0 4px rgba(43,108,176,0.08);
+        }
+
+        select {
+            flex-shrink: 0;
+            width: 130px;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0;
+            padding: 12px;
+            background: #f7f8f9;
+            border-radius: 8px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #cfd6db;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.22s;
+            flex-shrink: 0;
+        }
+
+        /* aktive Farbe: #FF3400 (sichtbar, guter Kontrast mit weißem Knopf) */
+        .toggle-switch.active {
+            background: #FF3400;
+        }
+
+        .toggle-switch::after {
+            content: "";
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.22s;
+            box-shadow: 0 1px 3px rgba(2,6,23,0.12);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(24px);
+        }
+
+        .exchange-rate-section {
+            display: none;
+            margin-top: 16px;
+            padding: 14px;
+            background: #fbfdff;
+            border-radius: 8px;
+            border-left: 4px solid #FF3400;
+        }
+
+        .exchange-rate-section.visible {
+            display: block;
+        }
+
+        .exchange-rate-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .exchange-rate-row input {
+            flex: 1;
+            font-weight: 700;
+            background: #fff;
+        }
+
+        /* Buttons: primäre Akzentfarbe #FF3400 */
+        .refresh-btn {
+            background: #FF3400;
+            color: #ffffff;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 8px;
+            width: 44px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.12s, transform 0.12s, box-shadow 0.12s;
+        }
+
+        .refresh-btn:hover {
+            background: #e12e00;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(255,52,0,0.12);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        .refresh-btn:focus {
+            outline: 3px solid rgba(255,52,0,0.18);
+        }
+
+        .rate-timestamp {
+            font-size: 12px;
+            color: #475569;
+            margin-top: 6px;
+        }
+
+        .loading-indicator {
+            display: none;
+            color: #FF3400;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .loading-indicator.visible {
+            display: block;
+        }
+
+        .error-message {
+            display: none;
+            background: #fff4f3;
+            color: #7d2a1e;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 10px;
+            border-left: 4px solid #f87171;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        /* Ergebnisse: auf hellem Card-Hintergrund für Lesbarkeit */
+        .results-card {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid #e6eaed;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+        }
+
+        .results-card h2 {
+            color: #0f172a;
+            margin-bottom: 12px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(15,23,42,0.06);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .result-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Hervorhebung mit integriertem Orange-Akzent */
+        .result-value.highlight {
+            font-size: 20px;
+            color: #FF3400;
+        }
+
+        .currency-symbol {
+            margin-left: 6px;
+            color: #475569;
+        }
+
+        /* Infoboxen */
+        .info-wrapper {
+            margin: 18px 0;
+            display: grid;
+            gap: 12px;
+        }
+
+        .info-box {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+            font-size: 14px;
+            color: #0f172a;
+            line-height: 1.45;
+            border: 1px solid #e6eaed;
+        }
+
+        .info-box h3 {
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: #0f172a;
+        }
+
+        .info-box ul {
+            margin-left: 18px;
+            margin-top: 6px;
+            color: #334155;
+        }
+
+        .info-box .example {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff6f1;
+            border-left: 4px solid #FF3400;
+            border-radius: 8px;
+            font-weight: 600;
+            white-space: pre-line;
+            color: #0f172a;
+        }
+
+        .info-box.secondary {
+            background: #fffefa;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 18px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .input-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            select {
+                width: 100%;
+            }
+
+            .refresh-btn {
+                width: 42px;
+                height: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Cashback-Rechner</h1>
+
+            <div class="form-group">
+                <label for="purchaseAmount">Kaufbetrag (inkl. MwSt.):</label>
+                <div class="input-row">
+                    <input type="number" id="purchaseAmount" min="0" step="0.01" placeholder="100.00" value="100" />
+                    <select id="currency">
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="SEK">SEK</option>
+                        <option value="PLN">PLN</option>
+                        <option value="MXN">MXN</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="vatRate">Mehrwertsteuersatz (%):</label>
+                <input type="number" id="vatRate" min="0" max="100" step="0.1" placeholder="19" value="19" />
+            </div>
+
+            <div class="form-group">
+                <label for="cashbackRate">Cashback-Rate (%):</label>
+                <input type="number" id="cashbackRate" min="0" max="100" step="0.1" placeholder="2.5" value="2.5" />
+            </div>
+
+            <div class="toggle-group">
+                <div class="toggle-switch" id="usdToggle"></div>
+                <label style="margin: 0; cursor: pointer;" id="usdToggleLabel">USD-Konversion aktivieren</label>
+            </div>
+
+            <div class="exchange-rate-section" id="exchangeRateSection">
+                <label>USD-Wechselkurs:</label>
+                <div class="exchange-rate-row">
+                    <input type="number" id="exchangeRate" step="0.0001" placeholder="Lade..." />
+                    <button class="refresh-btn" id="refreshBtn">↻</button>
+                </div>
+                <div class="rate-timestamp" id="rateTimestamp"></div>
+                <div class="loading-indicator" id="loadingIndicator">Lade Kurse...</div>
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+        </div>
+
+        <div class="card results-card">
+            <h2>Ergebnis</h2>
+
+            <div class="result-item">
+                <span class="result-label">Preis exkl. MwSt.:</span>
+                <span class="result-value" id="resultNetPrice">0.00</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Cashback:</span>
+                <span class="result-value highlight" id="resultCashback">0.00</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Effektivpreis:</span>
+                <span class="result-value highlight" id="resultEffectivePrice">0.00</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Ersparnis:</span>
+                <span class="result-value" id="resultSavings">0.0%</span>
+            </div>
+        </div>
+
+        <!-- Infoboxen: Erläuterungen (unter den Ergebnissen) -->
+        <div class="info-wrapper" aria-label="Erläuterungen">
+            <div class="info-box" role="note">
+                <h3>Wie funktioniert Cashback?</h3>
+                <p>Cashback ist eine Rückvergütung, die du für Online-Einkäufe erhältst und die dir aufs Bankkonto ausgezahlt wird.</p>
+                <p>&nbsp;</p>
+                <p><strong>Wichtig zu wissen:</strong></p>
+                <ul>
+                    <li>Cashback wird immer auf den Netto-Preis berechnet (Kaufpreis ohne Mehrwertsteuer)</li>
+                    <li>Die Cashback-Rate variiert je nach Shop (meist 1–10%)</li>
+                </ul>
+                <div class="example">Beispiel:
+Kaufpreis: 100€ (inkl. 19% MwSt.)
+Netto-Preis: 84.03€
+Cashback (3%): 2.52€
+→ Du zahlst effektiv nur 97.48€</div>
+            </div>
+
+            <div class="info-box secondary" role="note">
+                <h3>Was bedeutet USD-Konversion?</h3>
+                <p>Einige internationale Partnershops (z.B. AliExpress) erfassen den Kaufpreis im Hintergrund in USD, bevor sie das Cashback berechnen.</p>
+                <p>&nbsp;</p>
+                <p><strong>Wann aktivieren?</strong></p>
+                <ul>
+                    <li>✅ Wenn in den Cashback-Bedingungen eine USD-Umrechnung erwähnt wird</li>
+                    <li>❌ Bei europäischen Shops normalerweise nicht nötig</li>
+                </ul>
+                <p>&nbsp;</p>
+                <div class="example">Beispiel mit USD-Konversion:
+100€ → 108.47 USD (Netto) → 3% Cashback = 3.25 USD → 3.00€
+Ohne USD-Konversion: 100€ → 84.03€ (Netto) → 3% = 2.52€</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Konfiguration
+        const CURRENCY_SYMBOLS = {
+            EUR: '€',
+            GBP: '£',
+            SEK: 'kr',
+            PLN: 'zł',
+            MXN: '$'
+        };
+
+        const FALLBACK_RATES = {
+            EUR: 1.10,
+            GBP: 1.27,
+            SEK: 0.096,
+            PLN: 0.25,
+            MXN: 0.059
+        };
+
+        const CACHE_KEY = 'cashback_calculator_rates';
+        const CACHE_DURATION = 60 * 60 * 1000; // 1 Stunde in Millisekunden
+
+        // DOM-Elemente
+        const purchaseAmountInput = document.getElementById('purchaseAmount');
+        const currencySelect = document.getElementById('currency');
+        const vatRateInput = document.getElementById('vatRate');
+        const cashbackRateInput = document.getElementById('cashbackRate');
+        const usdToggle = document.getElementById('usdToggle');
+        const exchangeRateSection = document.getElementById('exchangeRateSection');
+        const exchangeRateInput = document.getElementById('exchangeRate');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const rateTimestamp = document.getElementById('rateTimestamp');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultNetPrice = document.getElementById('resultNetPrice');
+        const resultCashback = document.getElementById('resultCashback');
+        const resultEffectivePrice = document.getElementById('resultEffectivePrice');
+        const resultSavings = document.getElementById('resultSavings');
+
+        // State
+        let exchangeRates = {};
+        let usdConversionActive = false;
+
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initiale Berechnung
+            calculateCashback();
+            // Lade Wechselkurse beim Start
+            await fetchExchangeRates();
+            // Event Listeners
+            setupEventListeners();
+        });
+
+        // Event Listeners einrichten
+        function setupEventListeners() {
+            purchaseAmountInput.addEventListener('input', calculateCashback);
+            vatRateInput.addEventListener('input', calculateCashback);
+            cashbackRateInput.addEventListener('input', calculateCashback);
+
+            currencySelect.addEventListener('change', async () => {
+                await updateExchangeRateDisplay();
+                calculateCashback();
+            });
+
+            const toggleUSDConversion = () => {
+                usdConversionActive = !usdConversionActive;
+                usdToggle.classList.toggle('active', usdConversionActive);
+                exchangeRateSection.classList.toggle('visible', usdConversionActive);
+                if (usdConversionActive) updateExchangeRateDisplay();
+                calculateCashback();
+            };
+
+            usdToggle.addEventListener('click', toggleUSDConversion);
+            const usdToggleLabel = document.getElementById('usdToggleLabel');
+            if (usdToggleLabel) usdToggleLabel.addEventListener('click', toggleUSDConversion);
+
+            refreshBtn.addEventListener('click', async () => {
+                await fetchExchangeRates(true);
+            });
+
+            exchangeRateInput.addEventListener('input', (e) => {
+                const rate = parseFloat(e.target.value);
+                if (!isNaN(rate) && rate > 0) {
+                    const currency = currencySelect.value;
+                    exchangeRates[currency] = rate;
+                    calculateCashback();
+                }
+            });
+        }
+
+        // Cache-Funktionen
+        function getCachedRates() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (!cached) return null;
+                return JSON.parse(cached);
+            } catch (error) {
+                console.error('Fehler beim Laden aus Cache:', error);
+                return null;
+            }
+        }
+
+        function setCachedRates(rates) {
+            try {
+                const data = { rates: rates, timestamp: Date.now() };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            } catch (error) {
+                console.error('Fehler beim Speichern im Cache:', error);
+            }
+        }
+
+        function isCacheValid(cachedData) {
+            if (!cachedData || !cachedData.timestamp) return false;
+            return (Date.now() - cachedData.timestamp) < CACHE_DURATION;
+        }
+
+        // API-Funktionen
+        async function fetchExchangeRates(forceRefresh = false) {
+            if (!forceRefresh) {
+                const cached = getCachedRates();
+                if (cached && isCacheValid(cached)) {
+                    exchangeRates = cached.rates;
+                    updateExchangeRateDisplay();
+                    return;
+                }
+            }
+
+            showLoading();
+            hideError();
+
+            const currencies = ['EUR','GBP','SEK','PLN','MXN'];
+            const newRates = {};
+            let hasError = false;
+
+            const promises = currencies.map(async (currency) => {
+                try {
+                    const response = await fetch(`https://api.frankfurter.app/latest?from=${currency}&to=USD`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    const rate = data.rates?.USD;
+                    if (rate) newRates[currency] = rate;
+                    else throw new Error('Kein Kurs gefunden');
+                } catch (error) {
+                    newRates[currency] = FALLBACK_RATES[currency];
+                    hasError = true;
+                }
+            });
+
+            await Promise.all(promises);
+            exchangeRates = newRates;
+            setCachedRates(newRates);
+            hideLoading();
+            if (hasError) showError('⚠️ Offline-Kurs verwendet (kein Internet)');
+            updateExchangeRateDisplay();
+            if (usdConversionActive) calculateCashback();
+        }
+
+        function updateExchangeRateDisplay() {
+            const currency = currencySelect.value;
+            const rate = exchangeRates[currency] !== undefined ? exchangeRates[currency] : FALLBACK_RATES[currency];
+            if (rate !== undefined) {
+                exchangeRateInput.value = rate.toFixed(4);
+                if (exchangeRates[currency] !== undefined) {
+                    const cached = getCachedRates();
+                    if (cached && cached.timestamp) {
+                        const date = new Date(cached.timestamp);
+                        const formattedDate = date.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+                        const formattedTime = date.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+                        rateTimestamp.textContent = `Stand: ${formattedDate}, ${formattedTime} Uhr`;
+                    } else {
+                        rateTimestamp.textContent = 'Stand: Aktuell';
+                    }
+                } else {
+                    rateTimestamp.textContent = 'Stand: Offline-Kurs';
+                }
+            } else {
+                exchangeRateInput.value = '';
+                rateTimestamp.textContent = '';
+            }
+        }
+
+        function showLoading() { loadingIndicator.classList.add('visible'); }
+        function hideLoading() { loadingIndicator.classList.remove('visible'); }
+        function showError(message) { errorMessage.textContent = message; errorMessage.classList.add('visible'); }
+        function hideError() { errorMessage.classList.remove('visible'); }
+
+        // Berechnung
+        function calculateCashback() {
+            const purchaseAmount = parseFloat(purchaseAmountInput.value) || 0;
+            const vatRate = parseFloat(vatRateInput.value) || 0;
+            const cashbackRate = parseFloat(cashbackRateInput.value) || 0;
+            const currency = currencySelect.value;
+
+            if (purchaseAmount <= 0 || vatRate < 0 || cashbackRate < 0) {
+                updateResults(0,0,0,0,currency);
+                return;
+            }
+
+            let netPrice, cashbackAmount, effectivePrice;
+
+            if (usdConversionActive) {
+                const exchangeRate = exchangeRates[currency] !== undefined ? exchangeRates[currency] : FALLBACK_RATES[currency];
+                if (exchangeRate !== undefined) {
+                    netPrice = purchaseAmount / (1 + vatRate / 100);
+                    const netPriceUSD = netPrice * exchangeRate;
+                    const cashbackUSD = netPriceUSD * (cashbackRate / 100);
+                    const effectiveNetPriceUSD = netPriceUSD - cashbackUSD;
+                    const conversionRate = parseFloat(exchangeRateInput.value) || exchangeRate;
+                    const effectiveNetPrice = effectiveNetPriceUSD / conversionRate;
+                    effectivePrice = effectiveNetPrice * (1 + vatRate / 100);
+                    cashbackAmount = cashbackUSD / conversionRate;
+                } else {
+                    netPrice = purchaseAmount / (1 + vatRate / 100);
+                    cashbackAmount = netPrice * (cashbackRate / 100);
+                    effectivePrice = purchaseAmount - cashbackAmount;
+                }
+            } else {
+                netPrice = purchaseAmount / (1 + vatRate / 100);
+                cashbackAmount = netPrice * (cashbackRate / 100);
+                effectivePrice = purchaseAmount - cashbackAmount;
+            }
+
+            cashbackAmount = purchaseAmount - effectivePrice;
+            const savingsPercent = purchaseAmount > 0 ? (cashbackAmount / purchaseAmount) * 100 : 0;
+            updateResults(netPrice, cashbackAmount, effectivePrice, savingsPercent, currency);
+        }
+
+        function updateResults(netPrice, cashback, effectivePrice, savings, currency) {
+            resultNetPrice.textContent = formatCurrency(netPrice, currency);
+            resultCashback.textContent = formatCurrency(cashback, currency);
+            resultEffectivePrice.textContent = formatCurrency(effectivePrice, currency);
+            resultSavings.textContent = savings.toFixed(1) + '%';
+        }
+
+        function formatCurrency(amount, currency) {
+            const symbol = CURRENCY_SYMBOLS[currency] || '';
+            const formatted = (isNaN(amount) ? 0 : amount).toFixed(2);
+            return `${formatted} ${symbol}`;
+        }
+    </script>
+</body>
+</html>
